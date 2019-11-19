@@ -1,6 +1,10 @@
 package defs
 
-import "github.com/badvassal/wllib/gen/wlerr"
+import (
+	"strings"
+
+	"github.com/badvassal/wllib/gen/wlerr"
+)
 
 // LocationString produces a string representation of a location.
 func LocationString(loc int) string {
@@ -15,6 +19,16 @@ func LocationString(loc int) string {
 func ParseLocation(s string) (int, error) {
 	for k, v := range LocationNameMap {
 		if s == v {
+			return k, nil
+		}
+	}
+
+	return 0, wlerr.Errorf("invalid location string: %s", s)
+}
+
+func ParseLocationNoCase(s string) (int, error) {
+	for k, v := range LocationNameMap {
+		if strings.EqualFold(s, v) {
 			return k, nil
 		}
 	}

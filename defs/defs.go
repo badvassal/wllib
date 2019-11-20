@@ -107,17 +107,6 @@ const (
 	LocationPrevious                  = 255
 )
 
-const (
-	SelectorNeedlesToDowntownEast0   = 11
-	SelectorNeedlesToDowntownEast1   = 22
-	SelectorNeedlesToDowntownWest0   = 20
-	SelectorNeedlesToDowntownWest1   = 23
-	SelectorDowntownWestToNeedles0   = 2
-	SelectorDowntownWestToNeedles1   = 5
-	SelectorDowntownEastDowntownWest = 2
-	SelectorDowntownWestDowntownEast = 0
-)
-
 var MapDims = [][]gen.Point{
 	0: []gen.Point{
 		Block0WorldMap:                gen.Point{64, 64},

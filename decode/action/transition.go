@@ -121,7 +121,7 @@ func DecodeTransitions(table []byte, baseOff int) ([]*Transition, error) {
 func (t *Transition) MakeAbsolute(absCoords gen.Point) {
 	t.Relative = false
 	t.LocX = absCoords.X
-	t.LocY = absCoords.X
+	t.LocY = absCoords.Y
 }
 
 // IsDerelict indicates whether a transition leads to a derelict building.

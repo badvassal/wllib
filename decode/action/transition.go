@@ -3,6 +3,7 @@ package action
 import (
 	"fmt"
 
+	"github.com/badvassal/wllib/defs"
 	"github.com/badvassal/wllib/gen"
 	"github.com/badvassal/wllib/gen/wlerr"
 )
@@ -23,8 +24,7 @@ type Transition struct {
 	StringPtr  int  // B0b0,5
 	LocX       int  // B1
 	LocY       int  // B2
-	Derelict   bool // B3b7
-	Location   int  // B3b0,6
+	Location   int  // B3b0,7
 	ToClass    int  // B4b0,3
 	ToSelector int  // B4b4,7|B5b0,3 (optional)
 }
@@ -57,8 +57,7 @@ func DecodeTransition(data []byte) (*Transition, int, error) {
 	at.LocY = int(data[off])
 	off++
 
-	at.Derelict = data[off]&0x80 != 0
-	at.Location = int(data[off] & 0x7f)
+	at.Location = int(data[off])
 	off++
 
 	at.ToClass = int(data[off])
@@ -123,4 +122,9 @@ func (t *Transition) MakeAbsolute(absCoords gen.Point) {
 	t.Relative = false
 	t.LocX = absCoords.X
 	t.LocY = absCoords.X
+}
+
+// IsDerelict indicates whether a transition leads to a derelict building.
+func (t *Transition) IsDerelict() bool {
+	return t.Location != defs.LocationPrevious && t.Location >= 128
 }

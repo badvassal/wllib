@@ -119,12 +119,7 @@ func SerializeActionTransition(at action.Transition) []byte {
 
 	buf = append(buf, byte(at.LocY))
 
-	b3 := byte(0)
-	if at.Derelict {
-		b3 |= 0x80
-	}
-	b3 |= byte(at.Location)
-	buf = append(buf, b3)
+	buf = append(buf, byte(at.Location))
 
 	buf = append(buf, byte(at.ToClass))
 	if at.ToClass < action.TransitionToClassNoneMin {

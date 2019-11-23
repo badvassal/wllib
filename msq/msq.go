@@ -1,7 +1,5 @@
 package msq
 
-import "fmt"
-
 const (
 	BlockPrefix = "msq"
 	HeaderLen   = 6
@@ -17,19 +15,13 @@ type Header struct {
 
 // A decoded and decrypted MSQ block.  See
 // <https://wasteland.gamepedia.com/MSQ_Block>.
+// XXX: Remove offset and header?  These two fields can get out of sync with
+// the two "section" fields.
 type Block struct {
 	Offset       int
 	Hdr          Header
 	EncSection   []byte
 	PlainSection []byte
-}
-
-// String produces a minimal user-friendly string representation of an MSQ
-// block.
-func (block *Block) String() string {
-	return fmt.Sprintf("map-size:=%d(0x%x) central-dir-size=%d(0x%x)",
-		len(block.EncSection), len(block.EncSection),
-		len(block.PlainSection), len(block.PlainSection))
 }
 
 // Clone performs a deep copy of a decoded MSQ block.

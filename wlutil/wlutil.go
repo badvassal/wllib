@@ -12,36 +12,52 @@ import (
 	"github.com/badvassal/wllib/serialize"
 )
 
-// ReadOneGame reads a single GAMEx file from disk and converts it to a
-// sequence of decrypted MSQ blocks.
-func ReadOneGame(inPath string, numMapBlocks int) ([]msq.Block, error) {
-	g, err := ioutil.ReadFile(inPath)
+// ReadGames reads the GAME1 and GAME2 files from disk and returns their
+// contents.
+func ReadGames(inDir string) ([]byte, []byte, error) {
+	g0, err := ioutil.ReadFile(inDir + "/GAME1")
 	if err != nil {
-		return nil, wlerr.Wrapf(err, "failed to read GAME file")
+		return nil, nil, wlerr.Wrapf(err, "failed to read GAME file")
 	}
 
-	blocks, err := msq.ParseGame(g, numMapBlocks)
+	g1, err := ioutil.ReadFile(inDir + "/GAME2")
 	if err != nil {
-		return nil, err
+		return nil, nil, wlerr.Wrapf(err, "failed to read GAME file")
 	}
 
-	return blocks, nil
+	return g0, g1, nil
 }
 
-// ReadGames reads the GAME1 and GAME2 files and converts them into sequences
+// ParseGames parses the contents of the GAME1 and GAME2 files into sequences
 // of decrypted MSQ blocks.
-func ReadGames(inDir string) ([]msq.Block, []msq.Block, error) {
-	b1, err := ReadOneGame(inDir+"/GAME1", defs.Block0NumBlocks)
+func ParseGames(game0 []byte, game1 []byte) ([]msq.Block, []msq.Block, error) {
+	b0, err := msq.ParseGame(game0, defs.Block0NumBlocks)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	b2, err := ReadOneGame(inDir+"/GAME2", defs.Block1NumBlocks)
+	b1, err := msq.ParseGame(game1, defs.Block1NumBlocks)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return b1, b2, nil
+	return b0, b1, nil
+}
+
+// ReadAndParseGames reads the GAME1 and GAME2 files from disk and converts the
+// contents to sequences of decrypted MSQ blocks.
+func ReadAndParseGames(dir string) ([]msq.Block, []msq.Block, error) {
+	g0, g1, err := ReadGames(dir)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	b0, b1, err := ParseGames(g0, g1)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return b0, b1, nil
 }
 
 // DecodeGame decodes a sequence of decrypted MSQ blocks.
@@ -96,7 +112,9 @@ func CommitDecodeState(state decode.DecodeState,
 
 // DecodeGames converts a pair of MSQ block sequences (read from the GAME1 and
 // GAME2 files) into a DecodeState.
-func DecodeGames(bs1 []msq.Block, bs2 []msq.Block) (*decode.DecodeState, error) {
+func DecodeGames(bs1 []msq.Block,
+	bs2 []msq.Block) (*decode.DecodeState, error) {
+
 	dbs1, err := DecodeGame(bs1[:defs.Block0NumBlocks], 0)
 	if err != nil {
 		return nil, err
@@ -115,25 +133,28 @@ func DecodeGames(bs1 []msq.Block, bs2 []msq.Block) (*decode.DecodeState, error) 
 	}, nil
 }
 
-// WriteOneGame encrypts and writes a sequence of decrypted MSQ blocks to disk.
-func WriteOneGame(blocks []msq.Block, filename string) error {
-	game := serialize.SerializeGame(blocks)
+// WriteGames writes the GAME1 and GAME2 files to disk.
+func WriteGames(data0 []byte, data1 []byte, outDir string) error {
+	if err := ioutil.WriteFile(outDir+"/GAME1", data0, 0644); err != nil {
+		return wlerr.Wrapf(err, "failed to write game file")
+	}
 
-	if err := ioutil.WriteFile(filename, game, 0644); err != nil {
+	if err := ioutil.WriteFile(outDir+"/GAME2", data1, 0644); err != nil {
 		return wlerr.Wrapf(err, "failed to write game file")
 	}
 
 	return nil
 }
 
-// WriteOneGame encrypts and writes a pair of decrypted MSQ block sequences to
-// disk.
-func WriteGames(blocks1 []msq.Block, blocks2 []msq.Block, outDir string) error {
-	if err := WriteOneGame(blocks1, outDir+"/GAME1"); err != nil {
-		return err
-	}
+// SerailizeAndWriteGames encrypts a pair of MSQ block sequences and writes
+// them to disk as the GAME1 and GAME2.
+func SerializeAndWriteGames(blocks0 []msq.Block, blocks1 []msq.Block,
+	outDir string) error {
 
-	if err := WriteOneGame(blocks2, outDir+"/GAME2"); err != nil {
+	g0 := serialize.SerializeGame(blocks0)
+	g1 := serialize.SerializeGame(blocks1)
+
+	if err := WriteGames(g0, g1, outDir); err != nil {
 		return err
 	}
 

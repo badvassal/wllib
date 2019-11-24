@@ -1,8 +1,6 @@
 package action
 
 import (
-	"fmt"
-
 	"github.com/badvassal/wllib/defs"
 	"github.com/badvassal/wllib/gen"
 	"github.com/badvassal/wllib/gen/wlerr"
@@ -32,10 +30,7 @@ type Transition struct {
 // DecodeTransition decodes a transition from a sequence of bytes.  It returns
 // the decoded transition and its length (in bytes).
 func DecodeTransition(data []byte) (*Transition, int, error) {
-	wrapErr := func(err error, format string, args ...interface{}) error {
-		return wlerr.Wrapf(err, "failed to decode action transition: %s",
-			fmt.Sprintf(format, args...))
-	}
+	wrapErr := wlerr.MakeWrapper("failed to decode action transition")
 
 	if len(data) < TransitionMinLen {
 		return nil, 0, wrapErr(nil,

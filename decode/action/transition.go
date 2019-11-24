@@ -77,40 +77,21 @@ func DecodeTransition(data []byte) (*Transition, int, error) {
 	return at, off, nil
 }
 
-// DecodeTransition decodes a set of transitions from a sequence of bytes.
-// baseOff is the offset of the start of the transition action table relative
-// to the start of the MSQ block's encoded section.
-func DecodeTransitions(table []byte, baseOff int) ([]*Transition, error) {
-	subPtrs, firstPtr, err := gen.ReadPointers(table, baseOff)
-	if err != nil {
-		return nil, err
-	}
-	tdata := table[len(subPtrs)*2:]
-
+// DecodeTransitionTables decodes a set of transitions from a table of byte
+// buffers.
+func DecodeTransitionTable(table gen.Table) ([]*Transition, error) {
 	var ts []*Transition
-	for i, p := range subPtrs {
-		var t *Transition
 
-		if p == 0 {
-			t = nil
-		} else if i < len(subPtrs)-1 && subPtrs[i+1] == p {
-			t = nil
+	for i, elem := range table.Elems {
+		if len(elem) == 0 {
+			ts = append(ts, nil)
 		} else {
-			blob, err := gen.ExtractBlob(tdata, p-firstPtr, -1)
+			t, _, err := DecodeTransition(elem)
 			if err != nil {
-				return nil, wlerr.Wrapf(err,
-					"failed to extract action transition data: "+
-						"p=%d firstPtr=%d",
-					p, firstPtr)
+				return nil, wlerr.Wrapf(err, "transidx=%d", i)
 			}
-
-			t, _, err = DecodeTransition(blob)
-			if err != nil {
-				return nil, err
-			}
+			ts = append(ts, t)
 		}
-
-		ts = append(ts, t)
 	}
 
 	return ts, nil

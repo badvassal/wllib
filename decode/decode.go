@@ -89,70 +89,15 @@ func DecodeBlock(block msq.Block, dim gen.Point) (*Block, error) {
 		}
 	}
 
-	t0, err := parseActionTable(0)
-	if err != nil {
-		return nil, err
-	}
-	t1, err := parseActionTable(1)
-	if err != nil {
-		return nil, err
-	}
-	t2, err := parseActionTable(2)
-	if err != nil {
-		return nil, err
-	}
-	t3, err := parseActionTable(3)
-	if err != nil {
-		return nil, err
-	}
-	t4, err := parseActionTable(4)
-	if err != nil {
-		return nil, err
-	}
-	t5, err := parseActionTable(5)
-	if err != nil {
-		return nil, err
-	}
-	t6, err := parseActionTable(6)
-	if err != nil {
-		return nil, err
-	}
-	t7, err := parseActionTable(7)
-	if err != nil {
-		return nil, err
-	}
-	t8, err := parseActionTable(8)
-	if err != nil {
-		return nil, err
-	}
-	t9, err := parseActionTable(9)
-	if err != nil {
-		return nil, err
-	}
-	t11, err := parseActionTable(11)
-	if err != nil {
-		return nil, err
-	}
-	t12, err := parseActionTable(12)
-	if err != nil {
-		return nil, err
-	}
-	t13, err := parseActionTable(13)
-	if err != nil {
-		return nil, err
-	}
-	t14, err := parseActionTable(14)
-	if err != nil {
-		return nil, err
-	}
-	t15, err := parseActionTable(15)
-	if err != nil {
-		return nil, err
+	tables := make([]gen.Table, 16)
+	for i := 0; i < len(tables); i++ {
+		tables[i], err = parseActionTable(i)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ts, err := action.DecodeTransitions(
-		cb.ActionTables[action.IDTransition],
-		cd.ActionTables[action.IDTransition])
+	ts, err := action.DecodeTransitionTable(tables[10])
 	if err != nil {
 		return nil, err
 	}
@@ -201,22 +146,22 @@ func DecodeBlock(block msq.Block, dim gen.Point) (*Block, error) {
 		CentralDir: *cd,
 		MapInfo:    *mi,
 		ActionTables: action.Tables{
-			T0:          t0,
-			T1:          t1,
-			T2:          t2,
-			T3:          t3,
-			T4:          t4,
-			T5:          t5,
-			T6:          t6,
-			T7:          t7,
-			T8:          t8,
-			T9:          t9,
-			T11:         t11,
-			T12:         t12,
-			T13:         t13,
-			T14:         t14,
-			T15:         t15,
+			T0:          tables[0],
+			T1:          tables[1],
+			T2:          tables[2],
+			T3:          tables[3],
+			T4:          tables[4],
+			T5:          tables[5],
+			T6:          tables[6],
+			T7:          tables[7],
+			T8:          tables[8],
+			T9:          tables[9],
 			Transitions: ts,
+			T11:         tables[11],
+			T12:         tables[12],
+			T13:         tables[13],
+			T14:         tables[14],
+			T15:         tables[15],
 		},
 		SpecialActions: *sac,
 		NPCTable:       *nt,

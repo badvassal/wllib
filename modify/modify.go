@@ -118,6 +118,35 @@ func (m *BlockModifier) ReplaceMonsterData(md decode.MonsterData) error {
 	return nil
 }
 
+// ReplaceMonsterData replaces an MSQ block's loot section with the specified
+// one.
+func (m *BlockModifier) ReplaceLoots(loots []*action.Loot) error {
+	db, err := decode.DecodeBlock(m.block, m.dim)
+	if err != nil {
+		return err
+	}
+
+	cb, err := decode.CarveBlock(m.block, m.dim)
+	if err != nil {
+		return err
+	}
+
+	st := serialize.SerializeActionLoots(loots, db.CentralDir.ActionTables[action.IDLoot])
+	overflow := len(st) - len(cb.ActionTables[action.IDLoot])
+
+	if overflow != 0 {
+		return wlerr.Errorf(
+			"failed to replace loot table: "+
+				"replacement has size different from original: overflow=%d",
+			overflow)
+	}
+
+	off := db.Offsets.ActionTables[action.IDLoot]
+	copy(m.block.EncSection[off:off+len(st)], st)
+
+	return nil
+}
+
 // ReplaceActionTransitions replaces an MSQ block's transitions action table
 // with the specified one.
 func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transition) error {
@@ -133,7 +162,8 @@ func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transitio
 
 	db.ActionTables.Transitions = transitions
 
-	st := serialize.SerializeActionTransitions(transitions, db.CentralDir.ActionTables[action.IDTransition])
+	st := serialize.SerializeActionTransitions(transitions,
+		db.CentralDir.ActionTables[action.IDTransition])
 	overflow := len(st) - len(cb.ActionTables[action.IDTransition])
 
 	if overflow > 0 {

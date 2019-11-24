@@ -7,6 +7,7 @@ import (
 // These constants are table indices.  The action table with a given index
 // contains the specified type of data.
 const (
+	IDLoot       = 5
 	IDShop       = 6
 	IDTransition = 10
 )
@@ -18,7 +19,7 @@ type Tables struct {
 	T2          gen.Table
 	T3          gen.Table
 	T4          gen.Table
-	T5          gen.Table
+	Loots       []*Loot // Table 5
 	T6          gen.Table
 	T7          gen.Table
 	T8          gen.Table

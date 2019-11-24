@@ -152,6 +152,18 @@ func SerializeActionTransitions(ats []*action.Transition, baseOff int) []byte {
 	return data
 }
 
+func SerializeActionLoots(loots []*action.Loot, baseOff int) []byte {
+	t := gen.Table{}
+
+	for _, loot := range loots {
+		if loot != nil {
+			t.Elems = append(t.Elems, action.EncodeLoot(*loot))
+		}
+	}
+
+	return t.Encode(baseOff)
+}
+
 // SerializeActionTables encodes the set of action tables to a byte sequence.
 // baseOff is the offset of the start of the first action table relative to the
 // start of the encrypted section.
@@ -174,7 +186,7 @@ func SerializeActionTables(tables action.Tables, baseOff int) []byte {
 	appendGenTable(tables.T2)
 	appendGenTable(tables.T3)
 	appendGenTable(tables.T4)
-	appendGenTable(tables.T5)
+	appendBlob(SerializeActionLoots(tables.Loots, off))
 	appendGenTable(tables.T6)
 	appendGenTable(tables.T7)
 	appendGenTable(tables.T8)

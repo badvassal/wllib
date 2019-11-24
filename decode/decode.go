@@ -97,6 +97,11 @@ func DecodeBlock(block msq.Block, dim gen.Point) (*Block, error) {
 		}
 	}
 
+	loots, err := action.DecodeLootTable(tables[5])
+	if err != nil {
+		return nil, err
+	}
+
 	ts, err := action.DecodeTransitionTable(tables[10])
 	if err != nil {
 		return nil, err
@@ -151,7 +156,7 @@ func DecodeBlock(block msq.Block, dim gen.Point) (*Block, error) {
 			T2:          tables[2],
 			T3:          tables[3],
 			T4:          tables[4],
-			T5:          tables[5],
+			Loots:       loots,
 			T6:          tables[6],
 			T7:          tables[7],
 			T8:          tables[8],

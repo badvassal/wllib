@@ -1,6 +1,9 @@
 package decode
 
 import (
+	"bytes"
+	"encoding/binary"
+
 	"github.com/badvassal/wllib/gen"
 	"github.com/badvassal/wllib/gen/wlerr"
 )
@@ -68,4 +71,37 @@ func DecodeMapInfo(data []byte) (*MapInfo, error) {
 	off++ // One byte of padding (I think).
 
 	return mi, nil
+}
+
+// EncodeMapInfo encodes map info to a byte sequence.
+func EncodeMapInfo(mi MapInfo) []byte {
+	buf := &bytes.Buffer{}
+
+	// Two bytes of padding.
+	buf.WriteByte(0)
+	buf.WriteByte(0)
+
+	buf.WriteByte(byte(mi.Size))
+
+	// Two bytes of padding.
+	buf.WriteByte(0)
+	buf.WriteByte(0)
+
+	buf.WriteByte(byte(mi.EncounterFreq))
+	buf.WriteByte(byte(mi.TileSet))
+	buf.WriteByte(byte(mi.MaxMonsters))
+	buf.WriteByte(byte(mi.MaxEncounters))
+	buf.WriteByte(byte(mi.OobTile))
+	buf.WriteByte(byte(mi.SecRate))
+	buf.WriteByte(byte(mi.MinRate))
+	buf.WriteByte(byte(mi.HealRate))
+
+	for _, sid := range mi.StringIDs {
+		binary.Write(buf, binary.LittleEndian, uint16(sid))
+	}
+
+	// One byte of padding.
+	buf.WriteByte(0)
+
+	return buf.Bytes()
 }

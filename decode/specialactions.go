@@ -13,3 +13,9 @@ func DecodeSpecialActions(data []byte, baseOff int) (*SpecialActions, error) {
 		Actions: data,
 	}, nil
 }
+
+// EncodeSpecialActions encodes the special actions sequence to a byte
+// sequence.
+func EncodeSpecialActions(sa SpecialActions) []byte {
+	return sa.Actions
+}

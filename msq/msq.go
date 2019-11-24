@@ -38,3 +38,30 @@ func (block *Block) Clone() *Block {
 
 	return dup
 }
+
+// EncodeMsqHeader encodes an MSQ block header to a byte sequence.
+func EncodeMsqHeader(hdr Header) []byte {
+	var out []byte
+
+	out = append(out, []byte(BlockPrefix)...)
+	out = append(out, hdr.GameIdx+0x30)
+	out = append(out, hdr.Xor0)
+	out = append(out, hdr.Xor1)
+
+	return out
+}
+
+// EncodeMsqBlock encodes an MSQ block to a byte sequence.
+func EncodeMsqBlock(block Block) []byte {
+	csum := CalcChecksum(block.EncSection)
+	block.Hdr.Xor0 = byte(csum & 0xff)
+	block.Hdr.Xor1 = byte(csum >> 8)
+
+	hdrBytes := EncodeMsqHeader(block.Hdr)
+	encBytes := Encrypt(block.EncSection, block.Hdr.Xor0, block.Hdr.Xor1)
+
+	out := append(hdrBytes, encBytes...)
+	out = append(out, block.PlainSection...)
+
+	return out
+}

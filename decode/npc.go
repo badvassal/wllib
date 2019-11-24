@@ -71,3 +71,22 @@ func DecodeNPCTable(source []byte, baseOff int) (*NPCTable, int, error) {
 
 	return nt, totalLen, nil
 }
+
+// EncodeNPCTable encodes the NPC set to a byte sequence.
+func EncodeNPCTable(nt NPCTable, baseOff int) []byte {
+	var b []byte
+
+	// This table always starts with a 0 pointer for some reason.
+	b = append(b, gen.WriteUint16(0)...)
+
+	for i, _ := range nt.NPCs {
+		p := baseOff + 2*(len(nt.NPCs)+1) + NPCSize*i
+		b = append(b, gen.WriteUint16(uint16(p))...)
+	}
+
+	for _, n := range nt.NPCs {
+		b = append(b, n.Data...)
+	}
+
+	return b
+}

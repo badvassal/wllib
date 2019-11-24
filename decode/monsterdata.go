@@ -69,3 +69,30 @@ func DecodeMonsterData(data []byte) (*MonsterData, error) {
 		Monsters: monsters,
 	}, nil
 }
+
+// EncodeMonsterDataElem encodes a single element of monster data to a byte
+// sequence.
+func EncodeMonsterDataElem(e MonsterDataElem) []byte {
+	b := make([]byte, MonsterDataElemLen)
+
+	copy(b[0:2], gen.WriteUint16(uint16(e.HitPoints)))
+	b[2] = byte(e.HitChance)
+	b[3] = byte(e.ExtraDamage)
+	b[4] = byte(e.Armor) | byte(e.MaxCount)<<4
+	b[5] = byte(e.AttackType) | byte(e.FixedDamage)<<4
+	b[6] = byte(e.Type)
+	b[7] = byte(e.CombatImage)
+
+	return b
+}
+
+// EncodeMonsterData encodes the monster data section to a byte sequence.
+func EncodeMonsterData(md MonsterData) []byte {
+	var b []byte
+
+	for _, e := range md.Monsters {
+		b = append(b, EncodeMonsterDataElem(e)...)
+	}
+
+	return b
+}

@@ -119,3 +119,29 @@ func (cd *CentralDir) Pointers() []int {
 
 	return ps
 }
+
+// EncodeCentralDir encodes a central directory to a byte sequence.
+func EncodeCentralDir(cd CentralDir) []byte {
+	b := make([]byte, CentralDirLen)
+
+	off := 0
+
+	writePtr := func(p int) {
+		gen.Assert(off+2 <= len(b))
+		copy(b[off:off+2], gen.WriteUint16(uint16(p)))
+		off += 2
+	}
+
+	writePtr(cd.Strings)
+	writePtr(cd.MonsterNames)
+	writePtr(cd.MonsterData)
+	for _, at := range cd.ActionTables {
+		writePtr(at)
+	}
+	writePtr(cd.SpecialActions)
+	writePtr(cd.NPCTable)
+
+	gen.Assert(off == len(b))
+
+	return b
+}

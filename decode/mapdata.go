@@ -63,3 +63,35 @@ func DecodeMapData(data []byte, dim gen.Point) (*MapData, error) {
 		ActionSelectors: actsel,
 	}, nil
 }
+
+// EncodeMapData encodes map data to a byte sequence.
+func EncodeMapData(md MapData) []byte {
+	dim := gen.Point{
+		X: len(md.ActionClasses[0]),
+		Y: len(md.ActionClasses),
+	}
+
+	b := make([]byte, MapDataLen(dim))
+
+	off := 0
+	for y := 0; y < dim.Y; y++ {
+		for x := 0; x < dim.X; x++ {
+			ac1 := md.ActionClasses[y][x]
+			ac2 := md.ActionClasses[y][x+1]
+			b[off] = byte(ac2)<<4 | byte(ac1)
+
+			off++
+		}
+	}
+
+	for y := 0; y < dim.Y; y++ {
+		for x := 0; x < dim.X; x++ {
+			b[off] = byte(md.ActionSelectors[y][x])
+			off++
+		}
+	}
+
+	gen.Assert(off == len(b))
+
+	return b
+}

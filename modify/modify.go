@@ -84,7 +84,7 @@ func (m *BlockModifier) ReplaceMapInfo(mi decode.MapInfo) error {
 		return err
 	}
 
-	smi := serialize.SerializeMapInfo(mi)
+	smi := decode.EncodeMapInfo(mi)
 	if len(smi) != decBlock.Sizes.MapInfo {
 		return fmt.Errorf("map infos differ in size: old=%d new=%d",
 			decBlock.Sizes.MapInfo, len(smi))
@@ -105,7 +105,7 @@ func (m *BlockModifier) ReplaceMonsterData(md decode.MonsterData) error {
 		return err
 	}
 
-	smd := serialize.SerializeMonsterData(md)
+	smd := decode.EncodeMonsterData(md)
 	if len(smd) != decBlock.Sizes.MonsterData {
 		return fmt.Errorf("monster datas differ in size: old=%d new=%d",
 			decBlock.Sizes.MonsterData, len(smd))

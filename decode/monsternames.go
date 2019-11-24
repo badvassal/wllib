@@ -65,3 +65,30 @@ func DecodeMonsterNames(data []byte) (*MonsterNames, error) {
 		Names: names,
 	}, nil
 }
+
+// EncodeMonsterName encodes a single monster name to a byte sequence.
+func EncodeMonsterName(n MonsterName) []byte {
+	var b []byte
+
+	b = append(b, []byte(n.Start)...)
+	b = append(b, 0x0a)
+	b = append(b, []byte(n.MidSingular)...)
+	b = append(b, 0x0a)
+	b = append(b, []byte(n.MidPlural)...)
+	b = append(b, 0x0a)
+	b = append(b, []byte(n.End)...)
+	b = append(b, 0x00)
+
+	return b
+}
+
+// EncodeMonsterName encodes a set of monster names to a byte sequence.
+func EncodeMonsterNames(mn MonsterNames) []byte {
+	var b []byte
+
+	for _, n := range mn.Names {
+		b = append(b, EncodeMonsterName(n)...)
+	}
+
+	return b
+}

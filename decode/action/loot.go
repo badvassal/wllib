@@ -60,26 +60,26 @@ func DecodeLootItem(data []byte) (*LootItem, error) {
 
 // DecodeLootCash decodes a loot bag cash element from a sequence of bytes.
 func DecodeLootCash(data []byte) (*LootCash, error) {
-	if len(data) < LootCashLen {
+	if len(data) < lootCashLen {
 		return nil, wlerr.Errorf(
 			"data length too short: have=%d want>=%d: data=%+v",
-			len(data), LootCashLen, data)
+			len(data), lootCashLen, data)
 	}
 
 	cash := &LootCash{}
 
 	switch data[0] {
-	case LootCashPrefixFixed:
+	case lootCashPrefixFixed:
 		cash.Fixed = true
 
-	case LootCashPrefixRand:
+	case lootCashPrefixRand:
 		cash.Fixed = false
 
 	default:
 		return nil, wlerr.Errorf(
 			"loot cash starts with invalid byte: "+
 				"have=0x%02x want=0x%02x||0x%02x: data=%+v",
-			data[0], LootCashPrefixFixed, LootCashPrefixRand, data)
+			data[0], lootCashPrefixFixed, lootCashPrefixRand, data)
 	}
 
 	amount, err := gen.ReadUint16(data[1:3])
@@ -101,7 +101,7 @@ func decodeLootElem(data []byte) (*LootItem, *LootCash, int, error) {
 	case lootItemTerminator:
 		return nil, nil, 1, nil
 
-	case LootCashPrefixFixed, LootCashPrefixRand:
+	case lootCashPrefixFixed, lootCashPrefixRand:
 		cash, err := DecodeLootCash(data)
 		if err != nil {
 			return nil, nil, 0, err
@@ -201,12 +201,12 @@ func EncodeLootItem(item LootItem) []byte {
 
 // EncodeLootItem encodes a loot bag cash object to a byte sequence.
 func EncodeLootCash(cash LootCash) []byte {
-	b := make([]byte, LootCashLen)
+	b := make([]byte, lootCashLen)
 
 	if cash.Fixed {
-		b[0] = LootCashPrefixFixed
+		b[0] = lootCashPrefixFixed
 	} else {
-		b[0] = LootCashPrefixRand
+		b[0] = lootCashPrefixRand
 	}
 
 	copy(b[1:], gen.WriteUint16(uint16(cash.Amount)))

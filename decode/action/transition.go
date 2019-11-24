@@ -7,12 +7,12 @@ import (
 )
 
 const (
-	TransitionMinLen = 5
-	TransitionMaxLen = 6
+	transitionMinLen = 5
+	transitionMaxLen = 6
 
 	// If a transition's ToClass field is greater than or equal to
-	// TransitionToClassNoneMin, the ToSelector field is not present.
-	TransitionToClassNoneMin = 0xfd
+	// transitionToClassNoneMin, the ToSelector field is not present.
+	transitionToClassNoneMin = 0xfd
 )
 
 // Transition represents a transition (teleport action) in an MSQ block.
@@ -32,10 +32,10 @@ type Transition struct {
 func DecodeTransition(data []byte) (*Transition, int, error) {
 	wrapErr := wlerr.MakeWrapper("failed to decode action transition")
 
-	if len(data) < TransitionMinLen {
+	if len(data) < transitionMinLen {
 		return nil, 0, wrapErr(nil,
 			"data length too short: have=%d want>=%d: data=%+v",
-			len(data), TransitionMinLen, data)
+			len(data), transitionMinLen, data)
 	}
 
 	at := &Transition{}
@@ -58,11 +58,11 @@ func DecodeTransition(data []byte) (*Transition, int, error) {
 	at.ToClass = int(data[off])
 	off++
 
-	if at.ToClass < TransitionToClassNoneMin {
-		if len(data) < TransitionMaxLen {
+	if at.ToClass < transitionToClassNoneMin {
+		if len(data) < transitionMaxLen {
 			return nil, 0, wrapErr(nil,
 				"data length too short: have=%d want>=%d: data=%+v",
-				len(data), TransitionMaxLen, data)
+				len(data), transitionMaxLen, data)
 		}
 
 		at.ToSelector = int(data[off])
@@ -103,4 +103,32 @@ func (t *Transition) MakeAbsolute(absCoords gen.Point) {
 // IsDerelict indicates whether a transition leads to a derelict building.
 func (t *Transition) IsDerelict() bool {
 	return t.Location != defs.LocationPrevious && t.Location >= 128
+}
+
+// EncodeActionTransition encodes a single transition to a byte sequence.
+func EncodeActionTransition(at Transition) []byte {
+	var buf []byte
+
+	b0 := byte(0)
+	if at.Relative {
+		b0 |= 0x80
+	}
+	if at.Prompt {
+		b0 |= 0x40
+	}
+	b0 |= byte(at.StringPtr)
+	buf = append(buf, b0)
+
+	buf = append(buf, byte(at.LocX))
+
+	buf = append(buf, byte(at.LocY))
+
+	buf = append(buf, byte(at.Location))
+
+	buf = append(buf, byte(at.ToClass))
+	if at.ToClass < transitionToClassNoneMin {
+		buf = append(buf, byte(at.ToSelector))
+	}
+
+	return buf
 }

@@ -166,10 +166,10 @@ func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transitio
 		db.CentralDir.ActionTables[action.IDTransition])
 	overflow := len(st) - len(cb.ActionTables[action.IDTransition])
 
-	if overflow > 0 {
+	if overflow != 0 {
 		return wlerr.Errorf(
 			"failed to replace action transitions: "+
-				"replacement larger than original: overflow=%d",
+				"replacement has size different from original: overflow=%d",
 			overflow)
 	}
 

@@ -24,7 +24,7 @@ type LootCash struct {
 	Amount int  // B1,2
 }
 
-// Loot represents a loot back definiton in an MSQ block.
+// Loot represents a loot bag definiton in an MSQ block.
 type Loot struct {
 	ToClass    int // B0
 	ToSelector int // B1
@@ -32,7 +32,7 @@ type Loot struct {
 	Cash       *LootCash
 }
 
-// DecodeLootItem decodes a loot bag item from a single byte.
+// DecodeLootItem decodes a loot bag item from a sequence of bytes.
 func DecodeLootItem(data []byte) (*LootItem, error) {
 	if len(data) < lootItemLen {
 		return nil, wlerr.Errorf(
@@ -199,7 +199,7 @@ func EncodeLootItem(item LootItem) []byte {
 	return []byte{b0, byte(item.Amount)}
 }
 
-// EncodeLootItem encodes a loot bag cash object to a byte sequence.
+// EncodeLootCash encodes a loot bag cash object to a byte sequence.
 func EncodeLootCash(cash LootCash) []byte {
 	b := make([]byte, lootCashLen)
 

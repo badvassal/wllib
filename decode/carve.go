@@ -35,8 +35,9 @@ func NewCarvedBlock() *CarvedBlock {
 // cdEntryIs0Len indicates whether an area referenced by the central directory
 // has a length of 0.  An entry is "zero length" if its pointer is 0 or if the
 // central directory contains a higher priority pointer with the same value.
-// cdPtrIdx is the index of the pointer of the area to check.  cdPtrs is a list
-// of central directory pointers, sorted by priority (lowest to highest).
+// cdPtrIdx is the index of the pointer of the area to check.
+// cdPtrs is a list of central directory pointers, sorted by priority (lowest
+// to highest).
 func cdEntryIs0Len(cdPtrIdx int, cdPtrs []int) bool {
 	p := cdPtrs[cdPtrIdx]
 
@@ -55,9 +56,10 @@ func cdEntryIs0Len(cdPtrIdx int, cdPtrs []int) bool {
 
 // carveCDEntry extracts an area pointed to by the central directory.
 // encSection is the (now decrypted) leading section of the MSQ block that was
-// initially encrypted.  cdPtrIdx is the index of the pointer of the area to
-// carve.  cdPtrs is a list of central directory pointers, sorted by priority
-// (lowest to highest).
+// initially encrypted.
+// cdPtrIdx is the index of the pointer of the area to carve.
+// cdPtrs is a list of central directory pointers, sorted by priority (lowest
+// to highest).
 func carveCDEntry(encSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error) {
 	if cdPtrIdx < 0 || cdPtrIdx >= len(cdPtrs) {
 		return nil, wlerr.Errorf(
@@ -80,8 +82,9 @@ func carveCDEntry(encSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error)
 	return gen.ExtractBlob(encSection, p, end)
 }
 
-// CarveBlock converts an MSQ block into a CarvedBlock.  b is the block to
-// convert.  dim is the dimensions of the block's map.
+// CarveBlock converts an MSQ block into a CarvedBlock.
+// b is the block to convert.
+// dim is the dimensions of the block's map.
 func CarveBlock(b msq.Block, dim gen.Point) (*CarvedBlock, error) {
 	cb := NewCarvedBlock()
 

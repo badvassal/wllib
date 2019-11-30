@@ -78,13 +78,13 @@ func SerializeActionTables(tables action.Tables, baseOff int) []byte {
 	return b
 }
 
-// SerializeGame encodes a set of MSQ blocks to a byte sequence.  The result is
-// the contents of a GAMEx file.
-func SerializeGame(blocks []msq.Block) []byte {
+// SerializeGame encodes a set of MSQ block bodies to a byte sequence.  The
+// result is the contents of a GAMEx file.
+func SerializeGame(bodies []msq.Body, gameIdx int) []byte {
 	var out []byte
 
-	for _, b := range blocks {
-		sub := msq.EncodeMsqBlock(b)
+	for _, b := range bodies {
+		sub := msq.EncodeMsqBlock(b, gameIdx)
 		out = append(out, sub...)
 	}
 

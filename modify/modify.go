@@ -11,36 +11,36 @@ import (
 	"github.com/badvassal/wllib/serialize"
 )
 
-// BlockModifier is used for modifying an MSQ block.
+// BlockModifier is used for modifying an MSQ block body.
 type BlockModifier struct {
-	block msq.Block
-	dim   gen.Point
+	body msq.Body
+	dim  gen.Point
 }
 
-func NewBlockModifier(block msq.Block, dim gen.Point) *BlockModifier {
+func NewBlockModifier(body msq.Body, dim gen.Point) *BlockModifier {
 	return &BlockModifier{
-		block: block,
-		dim:   dim,
+		body: body,
+		dim:  dim,
 	}
 }
 
-// offsetPair converts an absolute MSQ block offset to a lower level
+// offsetPair converts an absolute MSQ block body offset to a lower level
 // representation.  It returns true if the offset can be found in the encrypted
 // section of the block; false otherwise.  The second return value is the
 // offset within the relevant section.
 func (m *BlockModifier) offsetPair(off int) (bool, int, error) {
-	if off < len(m.block.EncSection) {
+	if off < len(m.body.EncSection) {
 		return true, off, nil
 	}
 
-	plainOff := off - len(m.block.EncSection)
-	if plainOff < len(m.block.PlainSection) {
+	plainOff := off - len(m.body.EncSection)
+	if plainOff < len(m.body.PlainSection) {
 		return false, plainOff, nil
 	}
 
 	return false, 0, fmt.Errorf(
-		"invalid block offset: have=%d want<%d",
-		off, len(m.block.EncSection)+len(m.block.PlainSection))
+		"invalid block body offset: have=%d want<%d",
+		off, len(m.body.EncSection)+len(m.body.PlainSection))
 }
 
 // writeBytesToBuf copies data from one byte slice to another at a specified
@@ -57,7 +57,7 @@ func writeBytesToBuf(src []byte, dst *[]byte, off int) {
 	copy((*dst)[off:off+len(src)], src)
 }
 
-// writeBytes writes bytes to the MSQ block at the specified offset.
+// writeBytes writes bytes to the MSQ block body at the specified offset.
 func (m *BlockModifier) writeBytes(data []byte, off int) error {
 	isEnc, off, err := m.offsetPair(off)
 	if err != nil {
@@ -66,9 +66,9 @@ func (m *BlockModifier) writeBytes(data []byte, off int) error {
 
 	var dest *[]byte
 	if isEnc {
-		dest = &m.block.EncSection
+		dest = &m.body.EncSection
 	} else {
-		dest = &m.block.PlainSection
+		dest = &m.body.PlainSection
 	}
 
 	writeBytesToBuf(data, dest, off)
@@ -79,7 +79,7 @@ func (m *BlockModifier) writeBytes(data []byte, off int) error {
 // ReplaceMapInfo replaces an MSQ block's map info section with the specified
 // one.
 func (m *BlockModifier) ReplaceMapInfo(mi decode.MapInfo) error {
-	decBlock, err := decode.DecodeBlock(m.block, m.dim)
+	decBlock, err := decode.DecodeBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (m *BlockModifier) ReplaceMapInfo(mi decode.MapInfo) error {
 // ReplaceMonsterData replaces an MSQ block's monster data section with the
 // specified one.
 func (m *BlockModifier) ReplaceMonsterData(md decode.MonsterData) error {
-	decBlock, err := decode.DecodeBlock(m.block, m.dim)
+	decBlock, err := decode.DecodeBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
@@ -121,12 +121,12 @@ func (m *BlockModifier) ReplaceMonsterData(md decode.MonsterData) error {
 // ReplaceMonsterData replaces an MSQ block's loot section with the specified
 // one.
 func (m *BlockModifier) ReplaceLoots(loots []*action.Loot) error {
-	db, err := decode.DecodeBlock(m.block, m.dim)
+	db, err := decode.DecodeBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
 
-	cb, err := decode.CarveBlock(m.block, m.dim)
+	cb, err := decode.CarveBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (m *BlockModifier) ReplaceLoots(loots []*action.Loot) error {
 	}
 
 	off := db.Offsets.ActionTables[action.IDLoot]
-	copy(m.block.EncSection[off:off+len(st)], st)
+	copy(m.body.EncSection[off:off+len(st)], st)
 
 	return nil
 }
@@ -150,12 +150,12 @@ func (m *BlockModifier) ReplaceLoots(loots []*action.Loot) error {
 // ReplaceActionTransitions replaces an MSQ block's transitions action table
 // with the specified one.
 func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transition) error {
-	db, err := decode.DecodeBlock(m.block, m.dim)
+	db, err := decode.DecodeBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
 
-	cb, err := decode.CarveBlock(m.block, m.dim)
+	cb, err := decode.CarveBlock(m.body, m.dim)
 	if err != nil {
 		return err
 	}
@@ -174,12 +174,12 @@ func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transitio
 	}
 
 	off := db.Offsets.ActionTables[action.IDTransition]
-	copy(m.block.EncSection[off:off+len(st)], st)
+	copy(m.body.EncSection[off:off+len(st)], st)
 
 	return nil
 }
 
-// Block returns a BlockModifier's modified block.
-func (m *BlockModifier) Block() msq.Block {
-	return m.block
+// Body returns a BlockModifier's modified body.
+func (m *BlockModifier) Body() msq.Body {
+	return m.body
 }

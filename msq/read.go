@@ -132,7 +132,7 @@ func (r *reader) readByte() (bool, error) {
 }
 
 func parseBody(game []byte, startOff int, hdr Header,
-	isMap bool) (*Block, error) {
+	isMap bool) (*Body, error) {
 
 	r := newReader(hdr, game, startOff, isMap)
 
@@ -147,8 +147,7 @@ func parseBody(game []byte, startOff int, hdr Header,
 		}
 	}
 
-	return &Block{
-		Hdr:          hdr,
+	return &Body{
 		EncSection:   r.encSection,
 		PlainSection: r.plainSection,
 	}, nil
@@ -170,7 +169,7 @@ func parseHeader(game []byte, startOff int) (*Header, error) {
 			invRawMsg, startOff, startOff, BlockPrefix, prefix)
 	}
 
-	var idx byte
+	var idx int
 	idxByte := sub[3]
 
 	switch rune(idxByte) {
@@ -199,39 +198,43 @@ func parseHeader(game []byte, startOff int) (*Header, error) {
 
 // parseBlock decodes a single MSQ block.  isMap indicates whether the block to
 // be parsed is a map block (as opposed to e.g. character data).
-func parseBlock(game []byte, startOff int, isMap bool) (*Block, error) {
+func parseBlock(game []byte, startOff int, isMap bool) (*Desc, error) {
 	hdr, err := parseHeader(game, startOff)
 	if err != nil {
 		return nil, err
 	}
 
-	block, err := parseBody(game, startOff+HeaderLen, *hdr, isMap)
+	body, err := parseBody(game, startOff+HeaderLen, *hdr, isMap)
 	if err != nil {
 		return nil, err
 	}
 
-	block.Offset = startOff
-
-	return block, nil
+	return &Desc{
+		Offset: startOff,
+		Hdr:    *hdr,
+		Body:   *body,
+	}, nil
 }
 
 // ParseGame converts the contents of a GAMEx file into a set of decrypted MSQ
 // blocks.  numMapBlocks is the number of blocks in the input which represent
 // maps (as opposed to e.g. character data).
-func ParseGame(game []byte, numMapBlocks int) ([]Block, error) {
-	var blocks []Block
+func ParseGame(game []byte, numMapBlocks int) ([]Desc, error) {
+	var descs []Desc
 	for off := 0; off < len(game); {
-		isMap := len(blocks) < numMapBlocks
+		isMap := len(descs) < numMapBlocks
 
-		log.Debugf("parsing block %d at offset %d\n", len(blocks), off)
-		block, err := parseBlock(game, off, isMap)
+		log.Debugf("parsing block %d at offset %d\n", len(descs), off)
+		desc, err := parseBlock(game, off, isMap)
 		if err != nil {
 			return nil, err
 		}
-		blocks = append(blocks, *block)
+		descs = append(descs, *desc)
 
-		off += HeaderLen + len(block.EncSection) + len(block.PlainSection)
+		off += HeaderLen +
+			len(desc.Body.EncSection) +
+			len(desc.Body.PlainSection)
 	}
 
-	return blocks, nil
+	return descs, nil
 }

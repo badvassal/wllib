@@ -6,8 +6,8 @@ import (
 	"github.com/badvassal/wllib/msq"
 )
 
-// CarvedBlock is an MSQ block that has been decrypted and partitioned into
-// areas.  The areas are byte slices; they have not been decoded.
+// CarvedBlock is an MSQ block body that has been decrypted and partitioned
+// into areas.  The areas are byte slices; they have not been decoded.
 type CarvedBlock struct {
 	Dim     gen.Point
 	Offsets Meta
@@ -55,8 +55,8 @@ func cdEntryIs0Len(cdPtrIdx int, cdPtrs []int) bool {
 }
 
 // carveCDEntry extracts an area pointed to by the central directory.
-// encSection is the (now decrypted) leading section of the MSQ block that was
-// initially encrypted.
+// encSection is the (now decrypted) leading section of the MSQ block body that
+// was initially encrypted.
 // cdPtrIdx is the index of the pointer of the area to carve.
 // cdPtrs is a list of central directory pointers, sorted by priority (lowest
 // to highest).
@@ -82,10 +82,10 @@ func carveCDEntry(encSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error)
 	return gen.ExtractBlob(encSection, p, end)
 }
 
-// CarveBlock converts an MSQ block into a CarvedBlock.
-// b is the block to convert.
+// CarveBlock converts an MSQ block body into a CarvedBlock.
+// b is the block body to convert.
 // dim is the dimensions of the block's map.
-func CarveBlock(b msq.Block, dim gen.Point) (*CarvedBlock, error) {
+func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 	cb := NewCarvedBlock()
 
 	off := 0

@@ -55,8 +55,8 @@ func ValidateMapDim(dim gen.Point) error {
 }
 
 // DecodeBlock fully decodes an MSQ block.  dim is the dimensions of the block's map.
-func DecodeBlock(block msq.Block, dim gen.Point) (*Block, error) {
-	cb, err := CarveBlock(block, dim)
+func DecodeBlock(body msq.Body, dim gen.Point) (*Block, error) {
+	cb, err := CarveBlock(body, dim)
 	if err != nil {
 		return nil, err
 	}

@@ -42,10 +42,8 @@ func DecodeMapInfo(data []byte) (*MapInfo, error) {
 		return int(b)
 	}
 	readPtr := func() int {
-		p, err := gen.ReadUint16(data[off : off+2])
-		if err != nil {
-			panic(err.Error())
-		}
+		// Ignore error; we already verified source length.
+		p, _ := gen.ReadUint16(data[off : off+2])
 		off += 2
 		return p
 	}

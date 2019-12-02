@@ -20,8 +20,10 @@ type NPCTable struct {
 // block's encoded section.  It returns the decoded NPC table and its size, in
 // bytes.
 func DecodeNPCTable(source []byte, baseOff int) (*NPCTable, int, error) {
+	onErr := wlerr.MakeWrapper("failed to decode NPC table")
+
 	if len(source) < NPCTableMinLen {
-		return nil, 0, wlerr.Errorf(
+		return nil, 0, onErr(nil,
 			"data too short: have=%d want>=%d", len(source), NPCTableMinLen)
 	}
 
@@ -35,7 +37,7 @@ func DecodeNPCTable(source []byte, baseOff int) (*NPCTable, int, error) {
 	for _, e := range t.Elems {
 		n, err := DecodeCharacter(e)
 		if err != nil {
-			return nil, 0, wlerr.Wrapf(err, "failed to decode NPC")
+			return nil, 0, onErr(err, "")
 		}
 
 		nt.NPCs = append(nt.NPCs, *n)

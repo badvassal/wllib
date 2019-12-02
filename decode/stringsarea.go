@@ -1,8 +1,6 @@
 package decode
 
 import (
-	"fmt"
-
 	"github.com/badvassal/wllib/gen"
 	"github.com/badvassal/wllib/gen/wlerr"
 	log "github.com/sirupsen/logrus"
@@ -27,15 +25,11 @@ type StringsArea struct {
 // DecodeCentralDir parses a stringsd area from a sequence of bytes.  It
 // returns the decoded strings area and the size of the area, in bytes.
 func DecodeStringsArea(data []byte) (*StringsArea, int, error) {
-	decErr := func(format string, args ...interface{}) error {
-		return wlerr.Errorf("failed to decode strings section: %s",
-			fmt.Sprintf(format, args...))
-	}
+	onErr := wlerr.MakeWrapper("failed to decode strings area")
 
 	chars, err := gen.ExtractBlob(data, 0, StringsCharacterTableLen)
 	if err != nil {
-		return nil, 0, decErr(
-			"failed to extract character table: %s", err.Error())
+		return nil, 0, onErr(err, "failed to extract character table")
 	}
 
 	off := StringsCharacterTableLen
@@ -53,12 +47,12 @@ func DecodeStringsArea(data []byte) (*StringsArea, int, error) {
 	p := readPtr()
 	ptrAreaSize := p
 	if ptrAreaSize > len(data)-off {
-		return nil, 0, decErr(
+		return nil, 0, onErr(nil,
 			"pointer area truncated: p1=%d off=%d len(data)=%d",
 			p, off, len(data))
 	}
 	if ptrAreaSize%2 != 0 {
-		return nil, 0, decErr(
+		return nil, 0, onErr(nil,
 			"pointer region has invalid length: have=%d want%%2",
 			ptrAreaSize)
 	}
@@ -83,7 +77,7 @@ func DecodeStringsArea(data []byte) (*StringsArea, int, error) {
 		dataStart, dataEnd, len(data))
 	stringData, err := gen.ExtractBlob(data, dataStart, dataEnd)
 	if err != nil {
-		return nil, 0, decErr("%s", err.Error())
+		return nil, 0, onErr(err, "")
 	}
 
 	return &StringsArea{

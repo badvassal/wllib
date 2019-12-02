@@ -37,7 +37,8 @@ func DecodeMonsterNames(data []byte) (*MonsterNames, error) {
 
 	if len(seg) > 1 || len(seg) == 1 && seg[0] != 0xff {
 		return nil, wlerr.Errorf(
-			"incomplete monster name: %s", hex.EncodeToString(seg))
+			"failed to decode monster names: incomplete monster name: %s",
+			hex.EncodeToString(seg))
 	}
 
 	names := make([]MonsterName, len(segs))

@@ -21,14 +21,16 @@ func MapDataLen(dim gen.Point) int {
 // DecodeMapData decodes map data from a sequence of bytes.  dim is the map
 // dimensions.
 func DecodeMapData(data []byte, dim gen.Point) (*MapData, error) {
+	onErr := wlerr.MakeWrapper("failed to decode map data")
+
 	if err := ValidateMapDim(dim); err != nil {
-		return nil, err
+		return nil, onErr(err, "")
 	}
 
 	numTiles := dim.X * dim.Y
 	reqLen := numTiles/2 + numTiles
 	if len(data) < reqLen {
-		return nil, wlerr.Errorf(
+		return nil, onErr(nil,
 			"map data truncated: have=%dB want>=%dB",
 			len(data), reqLen)
 	}

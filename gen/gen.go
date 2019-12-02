@@ -44,14 +44,37 @@ func ExtractBlob(section []byte, off int, end int) ([]byte, error) {
 	return section[off:end], nil
 }
 
+// ReadString parses a null-terminated UTF8 string from a sequence of bytes.
+func ReadString(b []byte) (string, error) {
+	for i, c := range b {
+		if c == 0 {
+			return string(b[:i]), nil
+		}
+	}
+
+	return "", wlerr.Errorf("failed to parse string: no null terminator")
+}
+
+// ReadString parses a little-endian uint16 from a sequence of bytes.
 func ReadUint16(b []byte) (int, error) {
 	if len(b) != 2 {
 		return 0, wlerr.Errorf(
-			"cannot decode pointer: wrong number of bytes: have=%d want=2",
+			"cannot decode uint16: wrong number of bytes: have=%d want=2",
 			len(b))
 	}
 
 	return int(b[1])<<8 + int(b[0]), nil
+}
+
+// ReadString parses a little-endian uint24 from a sequence of bytes.
+func ReadUint24(b []byte) (int, error) {
+	if len(b) != 3 {
+		return 0, wlerr.Errorf(
+			"cannot decode uint24: wrong number of bytes: have=%d want=3",
+			len(b))
+	}
+
+	return int(b[2])<<16 + int(b[1])<<8 + int(b[0]), nil
 }
 
 // ReadPointers reads the pointers at the start of a table.  These pointers are
@@ -121,6 +144,27 @@ func WriteUint16(u16 uint16) []byte {
 	return []byte{
 		byte(u16 & 0xff),
 		byte(u16 >> 8),
+	}
+}
+
+// WriteUint16 converts the lower 24 bits of an int to their byte
+// representation (little endian).  If any higher bits are set they are
+// ignored.
+func WriteUint24(u24 int) []byte {
+	return []byte{
+		byte((u24 & 0xff) >> 0),
+		byte((u24 & 0xff00) >> 8),
+		byte((u24 & 0xff0000) >> 16),
+	}
+}
+
+// BoolToByte converts a boolean to its byte representation
+// (false=0x00, true=0x01).
+func BoolToByte(b bool) byte {
+	if b {
+		return byte(1)
+	} else {
+		return byte(0)
 	}
 }
 

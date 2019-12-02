@@ -12,6 +12,18 @@ import (
 )
 
 // BlockModifier is used for modifying an MSQ block body.
+//
+// XXX: Note: This data structure is just an intermediate solution.  Ideally,
+// we would modify a block with the following sequence:
+//
+// 1. Decode block (create a decode.Block)
+// 2. Modify decoded block.
+// 3. Re-encode decoded block from scratch.
+//
+// Unfortunately, this sequence causes some blocks to be resized (removal of
+// padding bytes).  Resizing blocks leads Wasteland to report a data corruption
+// error on startup.  If we can ever make block resizing work, then we can
+// remove this type (and indeed this entire file).
 type BlockModifier struct {
 	body msq.Body
 	dim  gen.Point
@@ -175,6 +187,41 @@ func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transitio
 
 	off := db.Offsets.ActionTables[action.IDTransition]
 	copy(m.body.EncSection[off:off+len(st)], st)
+
+	return nil
+}
+
+// ReplaceNPCTable replaces an MSQ block's NPC table with the specified one.
+func (m *BlockModifier) ReplaceNPCTable(npcTable decode.NPCTable) error {
+	if len(npcTable.NPCs) == 0 {
+		return nil
+	}
+
+	db, err := decode.DecodeBlock(m.body, m.dim)
+	if err != nil {
+		return err
+	}
+
+	cb, err := decode.CarveBlock(m.body, m.dim)
+	if err != nil {
+		return err
+	}
+
+	en, err := decode.EncodeNPCTable(npcTable, db.CentralDir.NPCTable)
+	if err != nil {
+		return err
+	}
+	overflow := len(en) - len(cb.NPCTable)
+
+	if overflow != 0 {
+		return wlerr.Errorf(
+			"failed to replace NPC table: "+
+				"replacement has size different from original: overflow=%d",
+			overflow)
+	}
+
+	off := db.Offsets.NPCTable
+	copy(m.body.EncSection[off:off+len(en)], en)
 
 	return nil
 }

@@ -1,6 +1,8 @@
 package decode
 
 import (
+	"strconv"
+
 	"github.com/badvassal/wllib/gen"
 	"github.com/badvassal/wllib/gen/wlerr"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +19,22 @@ const CentralDirLen = 42
 const (
 	CDPtrIdxSpecialActions = 0
 	CDPtrIdxNPCTable       = 1
-	CDPtrIdxActionTables   = 2
+	CDPtrIdxActionTable0   = 2
+	CDPtrIdxActionTable1   = 3
+	CDPtrIdxActionTable2   = 4
+	CDPtrIdxActionTable3   = 5
+	CDPtrIdxActionTable4   = 6
+	CDPtrIdxActionTable5   = 7
+	CDPtrIdxActionTable6   = 8
+	CDPtrIdxActionTable7   = 9
+	CDPtrIdxActionTable8   = 10
+	CDPtrIdxActionTable9   = 11
+	CDPtrIdxActionTable10  = 12
+	CDPtrIdxActionTable11  = 13
+	CDPtrIdxActionTable12  = 14
+	CDPtrIdxActionTable13  = 15
+	CDPtrIdxActionTable14  = 16
+	CDPtrIdxActionTable15  = 17
 	CDPtrIdxMonsterNames   = 18
 	CDPtrIdxMonsterData    = 19
 	CDPtrIdxStrings        = 20
@@ -35,6 +52,46 @@ type CentralDir struct {
 	ActionTables   []int
 	SpecialActions int
 	NPCTable       int
+}
+
+func ActionTablePtrPrio(idx int) int {
+	switch idx {
+	case 0:
+		return CDPtrIdxActionTable0
+	case 1:
+		return CDPtrIdxActionTable1
+	case 2:
+		return CDPtrIdxActionTable2
+	case 3:
+		return CDPtrIdxActionTable3
+	case 4:
+		return CDPtrIdxActionTable4
+	case 5:
+		return CDPtrIdxActionTable5
+	case 6:
+		return CDPtrIdxActionTable6
+	case 7:
+		return CDPtrIdxActionTable7
+	case 8:
+		return CDPtrIdxActionTable8
+	case 9:
+		return CDPtrIdxActionTable9
+	case 10:
+		return CDPtrIdxActionTable10
+	case 11:
+		return CDPtrIdxActionTable11
+	case 12:
+		return CDPtrIdxActionTable12
+	case 13:
+		return CDPtrIdxActionTable13
+	case 14:
+		return CDPtrIdxActionTable14
+	case 15:
+		return CDPtrIdxActionTable15
+	default:
+		panic("invalid action table index: " + strconv.Itoa(idx))
+		return 0
+	}
 }
 
 // DecodeCentralDir parses a central directory from a sequence of bytes.
@@ -111,7 +168,7 @@ func (cd *CentralDir) Pointers() []int {
 	ps[CDPtrIdxSpecialActions] = cd.SpecialActions
 
 	for i := 0; i < len(cd.ActionTables); i++ {
-		idx := CDPtrIdxActionTables + i
+		idx := ActionTablePtrPrio(i)
 		ps[idx] = cd.ActionTables[i]
 	}
 

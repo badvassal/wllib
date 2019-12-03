@@ -124,15 +124,14 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 
 	cdPtrs := cd.Pointers()
 
-	cdIdx := CDPtrIdxActionTables
 	for i, at := range cd.ActionTables {
+		cdIdx := ActionTablePtrPrio(i)
 		cb.ActionTables[i], err = carveCDEntry(b.EncSection, cdIdx, cdPtrs)
 		if err != nil {
 			return nil, wlerr.Wrapf(err,
 				"failed to carve action table %d", i)
 		}
 		cb.Offsets.ActionTables[i] = at
-		cdIdx++
 	}
 
 	cb.SpecialActions, err = carveCDEntry(b.EncSection, CDPtrIdxSpecialActions,

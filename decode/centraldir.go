@@ -17,16 +17,16 @@ const CentralDirLen = 42
 // same value.  In this case, the only section that is actually present is the
 // one with the highest priority pointer.
 const (
-	CDPtrIdxSpecialActions = 0
-	CDPtrIdxNPCTable       = 1
-	CDPtrIdxActionTable0   = 2
-	CDPtrIdxActionTable1   = 3
-	CDPtrIdxActionTable2   = 4
-	CDPtrIdxActionTable3   = 5
-	CDPtrIdxActionTable4   = 6
-	CDPtrIdxActionTable5   = 7
-	CDPtrIdxActionTable6   = 8
-	CDPtrIdxActionTable7   = 9
+	CDPtrIdxActionTable0   = 0
+	CDPtrIdxActionTable1   = 1
+	CDPtrIdxActionTable2   = 2
+	CDPtrIdxActionTable3   = 3
+	CDPtrIdxActionTable4   = 4
+	CDPtrIdxActionTable5   = 5
+	CDPtrIdxActionTable6   = 6
+	CDPtrIdxActionTable7   = 7
+	CDPtrIdxActionTable15  = 8
+	CDPtrIdxNPCTable       = 9
 	CDPtrIdxActionTable8   = 10
 	CDPtrIdxActionTable9   = 11
 	CDPtrIdxActionTable10  = 12
@@ -34,7 +34,7 @@ const (
 	CDPtrIdxActionTable12  = 14
 	CDPtrIdxActionTable13  = 15
 	CDPtrIdxActionTable14  = 16
-	CDPtrIdxActionTable15  = 17
+	CDPtrIdxSpecialActions = 17
 	CDPtrIdxMonsterNames   = 18
 	CDPtrIdxMonsterData    = 19
 	CDPtrIdxStrings        = 20

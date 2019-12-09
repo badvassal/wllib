@@ -115,6 +115,10 @@ func CommitDecodeState(state decode.DecodeState,
 				return wlerr.Wrapf(err, "block=%d", i)
 			}
 
+			if err := m.ReplaceNPCTable(db.NPCTable); err != nil {
+				return wlerr.Wrapf(err, "block=%d", i)
+			}
+
 			bodies[i] = m.Body()
 		}
 
@@ -139,12 +143,12 @@ func DecodeGames(bs1 []msq.Body,
 
 	dbs1, err := DecodeGame(bs1[:defs.Block0NumBlocks], 0)
 	if err != nil {
-		return nil, err
+		return nil, wlerr.Wrapf(err, "game=0")
 	}
 
 	dbs2, err := DecodeGame(bs2[:defs.Block1NumBlocks], 1)
 	if err != nil {
-		return nil, err
+		return nil, wlerr.Wrapf(err, "game=1")
 	}
 
 	return &decode.DecodeState{

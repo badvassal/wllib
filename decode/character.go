@@ -23,6 +23,8 @@ const (
 
 	MaxCharNameLen = 13
 	MaxCharRankLen = 24
+
+	CharSkillIDCount = 35
 )
 
 // CharSkill represents a single skill learned by a character.

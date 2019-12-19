@@ -205,3 +205,15 @@ func Assert(expr bool) {
 		panic("ASSERTION FAILED")
 	}
 }
+
+func FilterIDs(numIDs int, shouldKeep func(id int) bool) []int {
+	ids := make([]int, 0, numIDs)
+
+	for i := 0; i < numIDs; i++ {
+		if shouldKeep(i) {
+			ids = append(ids, i)
+		}
+	}
+
+	return ids
+}

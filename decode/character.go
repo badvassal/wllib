@@ -56,11 +56,11 @@ type Character struct {
 	AC              int         // 1a
 	Maxcon          int         // 1b-1c
 	Con             int         // 1d-1e
-	WeaponIdx       int         // 1f
+	WeaponIdx       int         // 1f (base 1)
 	SkillPoints     int         // 20
 	Experience      int         // 21-23
 	Level           int         // 24
-	ArmorIdx        int         // 25
+	ArmorIdx        int         // 25 (base 1)
 	PrevCon         int         // 26-27
 	Afflictions     uint        // 28
 	IsNPC           bool        // 29

@@ -1,6 +1,7 @@
 package defs
 
 const (
+	SkillIDNone            = 0x00
 	SkillIDBrawling        = 0x01
 	SkillIDClimb           = 0x02
 	SkillIDClipPistol      = 0x03

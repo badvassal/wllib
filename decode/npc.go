@@ -17,7 +17,7 @@ type NPCTable struct {
 
 // DecodeNPCTable parses a set of NPCs from a sequence of bytes.  baseOff is
 // the offset of the start of the NPC table relative to the start of the MSQ
-// block's encoded section.  It returns the decoded NPC table and its size, in
+// block's secure section.  It returns the decoded NPC table and its size, in
 // bytes.
 func DecodeNPCTable(source []byte, baseOff int) (*NPCTable, int, error) {
 	onErr := wlerr.MakeWrapper("failed to decode NPC table")

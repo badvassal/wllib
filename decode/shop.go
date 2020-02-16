@@ -7,7 +7,7 @@ type ShopData struct {
 
 // DecodeShopData parses a set of shops from a sequence of bytes.  baseOff is
 // the offset of the start of the shop data relative to the start of the MSQ
-// block's encoded section.
+// block's secure section.
 func DecodeShopData(data []byte, baseOff int) (*ShopData, error) {
 	return &ShopData{
 		Shops: data,

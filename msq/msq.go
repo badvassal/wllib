@@ -16,7 +16,7 @@ type Header struct {
 // Body is a decoded and decrypted MSQ block body.  See
 // <https://wasteland.gamepedia.com/MSQ_Block>.
 type Body struct {
-	EncSection   []byte
+	SecSection   []byte
 	PlainSection []byte
 }
 
@@ -31,11 +31,11 @@ type Desc struct {
 // Clone performs a deep copy of a decoded MSQ block.
 func (body *Body) Clone() *Body {
 	dup := &Body{
-		EncSection:   make([]byte, len(body.EncSection)),
+		SecSection:   make([]byte, len(body.SecSection)),
 		PlainSection: make([]byte, len(body.PlainSection)),
 	}
 
-	copy(dup.EncSection, body.EncSection)
+	copy(dup.SecSection, body.SecSection)
 	copy(dup.PlainSection, body.PlainSection)
 
 	return dup
@@ -55,7 +55,7 @@ func EncodeMsqHeader(hdr Header) []byte {
 
 // EncodeMsqBlock encodes an MSQ body to a byte sequence.
 func EncodeMsqBlock(body Body, gameIdx int) []byte {
-	csum := CalcChecksum(body.EncSection)
+	csum := CalcChecksum(body.SecSection)
 
 	hdr := Header{
 		GameIdx: gameIdx,
@@ -64,7 +64,7 @@ func EncodeMsqBlock(body Body, gameIdx int) []byte {
 	}
 
 	hdrBytes := EncodeMsqHeader(hdr)
-	encBytes := Encrypt(body.EncSection, hdr.Xor0, hdr.Xor1)
+	encBytes := Encrypt(body.SecSection, hdr.Xor0, hdr.Xor1)
 
 	out := append(hdrBytes, encBytes...)
 	out = append(out, body.PlainSection...)

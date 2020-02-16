@@ -55,12 +55,12 @@ func cdEntryIs0Len(cdPtrIdx int, cdPtrs []int) bool {
 }
 
 // carveCDEntry extracts an area pointed to by the central directory.
-// encSection is the (now decrypted) leading section of the MSQ block body that
+// secSection is the (now decrypted) leading section of the MSQ block body that
 // was initially encrypted.
 // cdPtrIdx is the index of the pointer of the area to carve.
 // cdPtrs is a list of central directory pointers, sorted by priority (lowest
 // to highest).
-func carveCDEntry(encSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error) {
+func carveCDEntry(secSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error) {
 	if cdPtrIdx < 0 || cdPtrIdx >= len(cdPtrs) {
 		return nil, wlerr.Errorf(
 			"invalid entry index: have=%d want>=0&&<%d",
@@ -77,9 +77,9 @@ func carveCDEntry(encSection []byte, cdPtrIdx int, cdPtrs []int) ([]byte, error)
 	}
 
 	su := gen.SortedUniqueInts(cdPtrs)
-	end := gen.NextInt(p, su, len(encSection))
+	end := gen.NextInt(p, su, len(secSection))
 
-	return gen.ExtractBlob(encSection, p, end)
+	return gen.ExtractBlob(secSection, p, end)
 }
 
 // CarveBlock converts an MSQ block body into a CarvedBlock.
@@ -97,14 +97,14 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 	}
 
 	mapDataLen := MapDataLen(dim)
-	cb.MapData, err = gen.ExtractBlob(b.EncSection, off, off+mapDataLen)
+	cb.MapData, err = gen.ExtractBlob(b.SecSection, off, off+mapDataLen)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve map data")
 	}
 	cb.Offsets.MapData = off
 
 	off = cb.Offsets.MapData + mapDataLen
-	blob, err := gen.ExtractBlob(b.EncSection, off, -1)
+	blob, err := gen.ExtractBlob(b.SecSection, off, -1)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve central directory")
 	}
@@ -112,11 +112,11 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 	if err != nil {
 		return nil, err
 	}
-	cb.CentralDir = b.EncSection[off : off+CentralDirLen]
+	cb.CentralDir = b.SecSection[off : off+CentralDirLen]
 	cb.Offsets.CentralDir = off
 
 	off = cb.Offsets.CentralDir + CentralDirLen
-	cb.MapInfo, err = gen.ExtractBlob(b.EncSection, off, off+MapInfoLen)
+	cb.MapInfo, err = gen.ExtractBlob(b.SecSection, off, off+MapInfoLen)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve map info")
 	}
@@ -126,7 +126,7 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 
 	for i, at := range cd.ActionTables {
 		cdIdx := ActionTablePtrPrio(i)
-		cb.ActionTables[i], err = carveCDEntry(b.EncSection, cdIdx, cdPtrs)
+		cb.ActionTables[i], err = carveCDEntry(b.SecSection, cdIdx, cdPtrs)
 		if err != nil {
 			return nil, wlerr.Wrapf(err,
 				"failed to carve action table %d", i)
@@ -134,7 +134,7 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 		cb.Offsets.ActionTables[i] = at
 	}
 
-	cb.SpecialActions, err = carveCDEntry(b.EncSection, CDPtrIdxSpecialActions,
+	cb.SpecialActions, err = carveCDEntry(b.SecSection, CDPtrIdxSpecialActions,
 		cdPtrs)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve special actions")
@@ -142,22 +142,22 @@ func CarveBlock(b msq.Body, dim gen.Point) (*CarvedBlock, error) {
 	cb.Offsets.SpecialActions = cd.SpecialActions
 
 	if !cdEntryIs0Len(CDPtrIdxNPCTable, cdPtrs) {
-		_, ntsize, err := DecodeNPCTable(b.EncSection[cd.NPCTable:], cd.NPCTable)
+		_, ntsize, err := DecodeNPCTable(b.SecSection[cd.NPCTable:], cd.NPCTable)
 		if err != nil {
 			return nil, wlerr.Wrapf(err, "failed to carve NPC table")
 		}
-		cb.NPCTable = b.EncSection[cd.NPCTable : cd.NPCTable+ntsize]
+		cb.NPCTable = b.SecSection[cd.NPCTable : cd.NPCTable+ntsize]
 		cb.Offsets.NPCTable = cd.NPCTable
 	}
 
-	cb.MonsterNames, err = carveCDEntry(b.EncSection, CDPtrIdxMonsterNames,
+	cb.MonsterNames, err = carveCDEntry(b.SecSection, CDPtrIdxMonsterNames,
 		cdPtrs)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve monster names")
 	}
 	cb.Offsets.MonsterNames = cd.MonsterNames
 
-	cb.MonsterData, err = carveCDEntry(b.EncSection, CDPtrIdxMonsterData,
+	cb.MonsterData, err = carveCDEntry(b.SecSection, CDPtrIdxMonsterData,
 		cdPtrs)
 	if err != nil {
 		return nil, wlerr.Wrapf(err, "failed to carve monster data")

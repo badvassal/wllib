@@ -16,7 +16,7 @@ var stringPrefix = []byte{0x20, 0x65}
 type readState int
 
 const (
-	readEncSection readState = iota
+	readSecSection readState = iota
 	readPlainSection
 )
 
@@ -30,10 +30,10 @@ type reader struct {
 
 	// Variable
 	off          int
-	enc          byte
+	sec          byte
 	csum         uint16
 	state        readState
-	encSection   []byte
+	secSection   []byte
 	plainSection []byte
 }
 
@@ -47,8 +47,8 @@ func newReader(hdr Header, game []byte, startOff int, isMap bool) *reader {
 		finalCsum: uint16(hdr.Xor1)<<8 + uint16(hdr.Xor0),
 
 		off:   startOff,
-		enc:   hdr.Xor0 ^ hdr.Xor1,
-		state: readEncSection,
+		sec:   hdr.Xor0 ^ hdr.Xor1,
+		state: readSecSection,
 	}
 }
 
@@ -83,8 +83,8 @@ func (r *reader) readByte() (bool, error) {
 
 	rawbyte := r.src[r.off]
 
-	if r.state == readEncSection {
-		pbyte := rawbyte ^ r.enc
+	if r.state == readSecSection {
+		pbyte := rawbyte ^ r.sec
 		newCsum := r.csum - uint16(pbyte)
 
 		atEnd := func() bool {
@@ -95,25 +95,25 @@ func (r *reader) readByte() (bool, error) {
 			}
 
 			if r.isMap {
-				// This is a bit of a hack.  The encrypted section ends when
+				// This is a bit of a hack.  The secure section ends when
 				// the checksum equals the value specified in the MSQ header.
 				// This leads to false positives.  To ignore false positives,
 				// ensure the first plaintext section (strings section)
 				// immediately follows.
 				return r.bytesFollow(stringPrefix)
 			} else {
-				// We don't know what follows the encrypted section in non-map
+				// We don't know what follows the secure section in non-map
 				// blocks.  Just rely on the checksum.
 				return newCsum != r.finalCsum
 			}
 		}
 
 		if atEnd() {
-			log.Debugf("done reading encrypted map data")
+			log.Debugf("done reading secure map data")
 			r.state = readPlainSection
 		} else {
-			r.encSection = append(r.encSection, pbyte)
-			r.enc += 0x1f
+			r.secSection = append(r.secSection, pbyte)
+			r.sec += 0x1f
 			r.csum = newCsum
 		}
 	}
@@ -148,7 +148,7 @@ func parseBody(game []byte, startOff int, hdr Header,
 	}
 
 	return &Body{
-		EncSection:   r.encSection,
+		SecSection:   r.secSection,
 		PlainSection: r.plainSection,
 	}, nil
 }
@@ -232,7 +232,7 @@ func ParseGame(game []byte, numMapBlocks int) ([]Desc, error) {
 		descs = append(descs, *desc)
 
 		off += HeaderLen +
-			len(desc.Body.EncSection) +
+			len(desc.Body.SecSection) +
 			len(desc.Body.PlainSection)
 	}
 

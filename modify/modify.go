@@ -37,22 +37,22 @@ func NewBlockModifier(body msq.Body, dim gen.Point) *BlockModifier {
 }
 
 // offsetPair converts an absolute MSQ block body offset to a lower level
-// representation.  It returns true if the offset can be found in the encrypted
+// representation.  It returns true if the offset can be found in the secure
 // section of the block; false otherwise.  The second return value is the
 // offset within the relevant section.
 func (m *BlockModifier) offsetPair(off int) (bool, int, error) {
-	if off < len(m.body.EncSection) {
+	if off < len(m.body.SecSection) {
 		return true, off, nil
 	}
 
-	plainOff := off - len(m.body.EncSection)
+	plainOff := off - len(m.body.SecSection)
 	if plainOff < len(m.body.PlainSection) {
 		return false, plainOff, nil
 	}
 
 	return false, 0, fmt.Errorf(
 		"invalid block body offset: have=%d want<%d",
-		off, len(m.body.EncSection)+len(m.body.PlainSection))
+		off, len(m.body.SecSection)+len(m.body.PlainSection))
 }
 
 // writeBytesToBuf copies data from one byte slice to another at a specified
@@ -78,7 +78,7 @@ func (m *BlockModifier) writeBytes(data []byte, off int) error {
 
 	var dest *[]byte
 	if isEnc {
-		dest = &m.body.EncSection
+		dest = &m.body.SecSection
 	} else {
 		dest = &m.body.PlainSection
 	}
@@ -154,7 +154,7 @@ func (m *BlockModifier) ReplaceLoots(loots []*action.Loot) error {
 	}
 
 	off := db.Offsets.ActionTables[action.IDLoot]
-	copy(m.body.EncSection[off:off+len(st)], st)
+	copy(m.body.SecSection[off:off+len(st)], st)
 
 	return nil
 }
@@ -186,7 +186,7 @@ func (m *BlockModifier) ReplaceActionTransitions(transitions []*action.Transitio
 	}
 
 	off := db.Offsets.ActionTables[action.IDTransition]
-	copy(m.body.EncSection[off:off+len(st)], st)
+	copy(m.body.SecSection[off:off+len(st)], st)
 
 	return nil
 }
@@ -221,7 +221,7 @@ func (m *BlockModifier) ReplaceNPCTable(npcTable decode.NPCTable) error {
 	}
 
 	off := db.Offsets.NPCTable
-	copy(m.body.EncSection[off:off+len(en)], en)
+	copy(m.body.SecSection[off:off+len(en)], en)
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 
 // SerializeActionTransitions encodes a set of transitions to a byte sequence.
 // baseOff is the offset of the start of the transition table relative to the
-// start of the encrypted section.
+// start of the secure section.
 func SerializeActionTransitions(ats []*action.Transition, baseOff int) []byte {
 	// Reserve room for the leading set of pointers.
 	data := make([]byte, len(ats)*2)
@@ -43,7 +43,7 @@ func SerializeActionLoots(loots []*action.Loot, baseOff int) []byte {
 
 // SerializeActionTables encodes the set of action tables to a byte sequence.
 // baseOff is the offset of the start of the first action table relative to the
-// start of the encrypted section.
+// start of the secure section.
 func SerializeActionTables(tables action.Tables, baseOff int) []byte {
 	var b []byte
 

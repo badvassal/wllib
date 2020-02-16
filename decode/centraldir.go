@@ -43,7 +43,7 @@ const (
 
 // CentralDir represents an MSQ block's central directory.  It contains
 // pointers to other areas within the same block.  Each pointer is a 16-bit
-// offset relative to the start of the block's encrypted section.
+// offset relative to the start of the block's secure section.
 // (see <https://wasteland.gamepedia.com/Central_MSQ_Directory>).
 type CentralDir struct {
 	Strings        int

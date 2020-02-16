@@ -1,13 +1,13 @@
 package decode
 
-// SpecialActinos represents an MSQ block's set of special actions (action class 6).
+// SpecialActions represents an MSQ block's set of special actions (action class 6).
 type SpecialActions struct {
 	Actions []byte
 }
 
 // DecodeSpecialActions parses a set of special actions from a sequence of
 // bytes.  baseOff is the offset of the start of the special actions relative
-// to the start of the MSQ block's encoded section.
+// to the start of the MSQ block's secure section.
 func DecodeSpecialActions(data []byte, baseOff int) (*SpecialActions, error) {
 	return &SpecialActions{
 		Actions: data,
